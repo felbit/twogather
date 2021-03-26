@@ -1,0 +1,26 @@
+cabal-version:      2.4
+name:               twogather
+version:            0.1.0.0
+license:            NONE
+author:             Martin Penckert
+maintainer:         martin.penckert@gmail.com
+extra-source-files: CHANGELOG.md
+
+executable twogather
+    main-is:            Main.hs
+    other-modules:      Model
+                      , Server
+    build-depends:      aeson
+                      , base ^>=4.14.1.0
+                      , blaze-html
+                      , mtl
+                      , servant
+                      , servant-server
+                      , text
+                      , time
+                      , wai
+                      , warp
+    hs-source-dirs:     app
+                      , src
+    default-language:   Haskell2010
+    default-extensions: OverloadedStrings
