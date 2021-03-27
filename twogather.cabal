@@ -8,12 +8,17 @@ extra-source-files: CHANGELOG.md
 
 executable twogather
     main-is:            Main.hs
-    other-modules:      Model
+    other-modules:      Dashboard
+                      , Model
                       , Server
     build-depends:      aeson
                       , base ^>=4.14.1.0
-                      , blaze-html
+                      , bytestring
+                      , http-media
+                      , lucid
                       , mtl
+                      , safe-money
+                      , safe-money-aeson
                       , servant
                       , servant-server
                       , text

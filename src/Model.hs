@@ -1,44 +1,58 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DataKinds            #-}
+{-# LANGUAGE DeriveGeneric        #-}
+{-# LANGUAGE FlexibleContexts     #-}
+{-# LANGUAGE MonoLocalBinds       #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Model where
 
 import           Data.Aeson
-import           Data.Text                      ( Text )
-import qualified Data.Text                     as T
+import           Data.Text          (Text)
+import qualified Data.Text          as T
 import           Data.Time.Calendar
 import           GHC.Generics
+import           Lucid
 
-data TgRecord = TgRecord
-  { amount  :: Float
-  , comment :: Text
-  , date    :: Day
-  , user    :: TgUser
-  }
+data TgRecord =
+  TgRecord
+    { amount  :: Int
+    , comment :: Text
+    , date    :: Day
+    , user    :: Text
+    }
   deriving (Eq, Show, Generic)
 
 instance ToJSON TgRecord
+
 instance FromJSON TgRecord
 
-data TgUser = TgUser
-  { name :: Text
-  }
+instance ToHtml TgRecord where
+  toHtml r =
+    tr_ $ do
+      td_ $ toHtml (showGregorian $ date r)
+      td_ $ toHtml (comment r)
+      with td_ [class_ "d-flex justify-content-end"] $
+        toHtml $ show (amount r) ++ " SEK"
+      td_ $ toHtml (user r)
+  toHtmlRaw = toHtml
+
+-- Form data
+data TgRecord' =
+  TgRecord'
+    { amount'  :: Int
+    , comment' :: Text
+    , user'    :: Text
+    }
   deriving (Eq, Show, Generic)
 
-instance ToJSON TgUser
-instance FromJSON TgUser
+instance FromJSON TgRecord'
 
 -- Database
-users :: [TgUser]
-users = [TgUser "Martin", TgUser "Paula"]
-
 records :: [TgRecord]
 records =
-  [ TgRecord 134.00 "ICA"         (fromGregorian 2021 3 26) (TgUser "Martin")
-  , TgRecord 231.80 "MAX Burgers" (fromGregorian 2021 3 25) (TgUser "Martin")
-  , TgRecord 59.00
-             "Helgkasse Godisbanken"
-             (fromGregorian 2021 3 18)
-             (TgUser "Paula")
-  , TgRecord 29.00  "Karma"   (fromGregorian 2021 3 17) (TgUser "Martin")
-  , TgRecord 129.00 "Willy:s" (fromGregorian 2021 3 15) (TgUser "Paula")
+  [ TgRecord 134 "ICA" (fromGregorian 2021 3 26) "Martin"
+  , TgRecord 231 "MAX Burgers" (fromGregorian 2021 3 25) "Martin"
+  , TgRecord 59 "Helgkasse Godisbanken" (fromGregorian 2021 3 18) "Paula"
+  , TgRecord 29 "Karma" (fromGregorian 2021 3 17) "Martin"
+  , TgRecord 129 "Willy:s" (fromGregorian 2021 3 15) "Paula"
   ]
