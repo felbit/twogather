@@ -7,14 +7,13 @@
 module Server where
 
 import           Control.Monad.Except
-import           Control.Monad.Reader
-import           Data.List
-import           Data.Time.Calendar
+import           Data.Text
 import           Lucid
 import           Network.HTTP.Media   ((//), (/:))
 import           Servant
 
-import           Dashboard            (Dashboard, dashboard)
+import           Dashboard
+import           Data.Maybe
 import           Data.Time
 import           Model                (TgRecord (TgRecord, comment),
                                        TgRecord' (amount', comment', user'),
@@ -35,7 +34,8 @@ instance MimeRender HTML (Html a) where
 -- Defining the API
 type GetDashboard = Get '[ HTML] Dashboard
 
-type PostTgRecord = ReqBody '[ JSON] TgRecord' :> Post '[ JSON] [TgRecord]
+type PostTgRecord
+   = ReqBody '[ FormUrlEncoded] RecordForm :> Post '[ HTML] Dashboard
 
 type API = GetDashboard :<|> PostTgRecord
 
@@ -44,11 +44,17 @@ server = dashboardH :<|> recordH
   where
     dashboardH :: Handler Dashboard
     dashboardH = return dashboard
-    recordH :: TgRecord' -> Handler [TgRecord]
-    recordH r' = do
+    recordH :: RecordForm -> Handler Dashboard
+    recordH record' = do
       currentDay <- liftIO $ utctDay <$> getCurrentTime
       return $
-        TgRecord (amount' r') (comment' r') currentDay (user' r') : records
+        Dashboard
+          (TgRecord
+             (ramount record')
+             (rcomment record')
+             currentDay
+             (ruser record') :
+           records)
 
 app :: Application
 app = serve (Proxy :: Proxy API) server

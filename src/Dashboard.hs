@@ -1,12 +1,17 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module Dashboard where
 
-import           Data.ByteString (ByteString)
+import           Data.ByteString    (ByteString)
+import           Data.Text          (Text)
+import           GHC.Generics       (Generic)
 import           Lucid
-import qualified Model           as M
+import qualified Model              as M
+import           Web.FormUrlEncoded (FromForm)
 
-data Dashboard =
+newtype Dashboard =
   Dashboard
-    { records :: [M.TgRecord]
+    { transactionRecords :: [M.TgRecord]
     }
   deriving (Eq, Show)
 
@@ -30,27 +35,24 @@ instance ToHtml Dashboard where
                 input_
                   [ type_ "text"
                   , class_ "form-control"
-                  , placeholder_ "23.00"
-                  , name_ "amount"
-                  , id_ "amount"
+                  , placeholder_ "230"
+                  , name_ "ramount"
                   , required_ "true"
                   ]
-              with div_ [class_ "col-md-7"] $
+              with div_ [class_ "col-md-5"] $
                 input_
                   [ type_ "text"
                   , class_ "form-control"
                   , placeholder_ "I <3 Pizza!"
-                  , name_ "comment"
-                  , id_ "comment"
+                  , name_ "rcomment"
                   , required_ "true"
                   ]
-              with div_ [class_ "col-md-7"] $
+              with div_ [class_ "col-md-2"] $
                 input_
                   [ type_ "text"
                   , class_ "form-control"
-                  , placeholder_ "I <3 Pizza!"
-                  , name_ "user"
-                  , id_ "user"
+                  , placeholder_ "Martin"
+                  , name_ "ruser"
                   , required_ "true"
                   ]
               with div_ [class_ "col-md"] $
@@ -63,9 +65,19 @@ instance ToHtml Dashboard where
                   th_ "For what?"
                   th_ "How much?"
                   th_ "Who?"
-              tbody_ $ mapM_ toHtml (records db)
+              tbody_ $ mapM_ toHtml (transactionRecords db)
   -- don't give me compiler warnings
   toHtmlRaw = toHtml
 
+data RecordForm =
+  RecordForm
+    { ramount  :: Int
+    , rcomment :: !Text
+    , ruser    :: !Text
+    }
+  deriving (Eq, Show, Generic)
+
+instance FromForm RecordForm
+
 dashboard :: Dashboard
-dashboard = Dashboard {records = M.records}
+dashboard = Dashboard {transactionRecords = M.records}
