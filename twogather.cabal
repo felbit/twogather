@@ -9,7 +9,8 @@ extra-source-files: CHANGELOG.md
 executable twogather
     main-is:            Main.hs
     other-modules:      Dashboard
-                      , Model
+                      , Database
+                      , Model.Record
                       , Server
     build-depends:      aeson
                       , base ^>=4.14.1.0

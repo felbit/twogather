@@ -6,12 +6,14 @@ import           Data.ByteString    (ByteString)
 import           Data.Text          (Text)
 import           GHC.Generics       (Generic)
 import           Lucid
-import qualified Model              as M
 import           Web.FormUrlEncoded (FromForm)
+
+import           Database
+import           Model.Record
 
 newtype Dashboard =
   Dashboard
-    { transactionRecords :: [M.TgRecord]
+    { transactionRecords :: [TgRecord]
     }
   deriving (Eq, Show)
 
@@ -80,4 +82,4 @@ data RecordForm =
 instance FromForm RecordForm
 
 dashboard :: Dashboard
-dashboard = Dashboard {transactionRecords = M.records}
+dashboard = Dashboard {transactionRecords = records}

@@ -7,17 +7,16 @@
 module Server where
 
 import           Control.Monad.Except
+import           Data.Maybe
 import           Data.Text
+import           Data.Time
 import           Lucid
 import           Network.HTTP.Media   ((//), (/:))
 import           Servant
 
 import           Dashboard
-import           Data.Maybe
-import           Data.Time
-import           Model                (TgRecord (TgRecord, comment),
-                                       TgRecord' (amount', comment', user'),
-                                       records)
+import           Database             (records)
+import           Model.Record         (TgRecord (TgRecord, comment))
 
 -- Serving HTML with Lucid
 data HTML
