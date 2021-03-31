@@ -13,7 +13,7 @@ import           Model.Record
 
 newtype Dashboard =
   Dashboard
-    { transactionRecords :: [TgRecord]
+    { transactionRecords :: [Record]
     }
   deriving (Eq, Show)
 

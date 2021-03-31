@@ -1,15 +1,14 @@
 module Database where
 
 import           Data.Time.Calendar
-
 import           Model.Record
 
 -- Database
-records :: [TgRecord]
+records :: [Record]
 records =
-  [ TgRecord 134 "ICA" (fromGregorian 2021 3 26) "Martin"
-  , TgRecord 231 "MAX Burgers" (fromGregorian 2021 3 25) "Martin"
-  , TgRecord 59 "Helgkasse Godisbanken" (fromGregorian 2021 3 18) "Paula"
-  , TgRecord 29 "Karma" (fromGregorian 2021 3 17) "Martin"
-  , TgRecord 129 "Willy:s" (fromGregorian 2021 3 15) "Paula"
+  [ Record "Martin" 134 "ICA"                   (fromGregorian 2021 3 26)
+  , Record "Martin" 231 "MAX Burgers"           (fromGregorian 2021 3 25)
+  , Record "Paula"  59  "Helgkasse Godisbanken" (fromGregorian 2021 3 18)
+  , Record "Martin" 29  "Karma"                 (fromGregorian 2021 3 17)
+  , Record "Paula"  129 "Willy:s"               (fromGregorian 2021 3 15)
   ]

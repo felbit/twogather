@@ -16,7 +16,7 @@ import           Servant
 
 import           Dashboard
 import           Database             (records)
-import           Model.Record         (TgRecord (TgRecord, comment))
+import           Model.Record
 
 -- Serving HTML with Lucid
 data HTML
@@ -31,12 +31,8 @@ instance MimeRender HTML (Html a) where
   mimeRender _ = renderBS
 
 -- Defining the API
-type GetDashboard = Get '[ HTML] Dashboard
-
-type PostTgRecord
-   = ReqBody '[ FormUrlEncoded] RecordForm :> Post '[ HTML] Dashboard
-
-type API = GetDashboard :<|> PostTgRecord
+type API = Get '[ HTML] Dashboard 
+      :<|> ReqBody '[ FormUrlEncoded] RecordForm :> Post '[ HTML] Dashboard
 
 server :: Server API
 server = dashboardH :<|> recordH
@@ -48,11 +44,11 @@ server = dashboardH :<|> recordH
       currentDay <- liftIO $ utctDay <$> getCurrentTime
       return $
         Dashboard
-          (TgRecord
+          (Record
+             (ruser record')
              (ramount record')
              (rcomment record')
-             currentDay
-             (ruser record') :
+             currentDay :
            records)
 
 app :: Application

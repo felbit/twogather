@@ -19,6 +19,9 @@ executable twogather
                       , http-media
                       , lucid
                       , mtl
+                      , persistent
+                      , persistent-template
+                      , persistent-sqlite
                       , safe-money
                       , safe-money-aeson
                       , servant
