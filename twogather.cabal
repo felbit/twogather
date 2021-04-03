@@ -9,8 +9,9 @@ extra-source-files: CHANGELOG.md
 executable twogather
     main-is:            Main.hs
     other-modules:      Dashboard
-                      , Database
                       , Model.Record
+                      , Model.Settlement
+                      , Model.SettleState
                       , Server
     build-depends:      aeson
                       , base ^>=4.14.1.0
@@ -18,19 +19,18 @@ executable twogather
                       , http-api-data
                       , http-media
                       , lucid
+                      , monad-logger
                       , mtl
                       , persistent
                       , persistent-template
                       , persistent-sqlite
-                      , safe-money
-                      , safe-money-aeson
                       , servant
                       , servant-server
+                      , string-conversions
                       , text
                       , time
                       , wai
                       , warp
-    hs-source-dirs:     app
-                      , src
+    hs-source-dirs:     src
     default-language:   Haskell2010
     default-extensions: OverloadedStrings

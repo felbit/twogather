@@ -16,34 +16,41 @@ the month.
 Todo:
   - only recalculate while in 'OUTSTANDING' state
     (pin amount in action OUTSTANDING->TRANSACTED)
-  - allow partial settlements 
+  - allow partial settlements
     - save transfered ammount
 -}
 
+{-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module Model.Settlement where
 
 import           Data.Aeson
 import           Data.Text                      ( Text )
 import           Database.Persist.TH
-
-data SettleState
-  = OUTSTANDING -- ^ Todo
-  | TRANSACTED -- ^ Money sent, settlement initiated
-  | SETTLED -- ^ Done, settlement cleared
-  deriving (Show, Read, Eq)
-derivePersistField "SettleState"
+import           GHC.Generics
+import           Lucid
+-------------------------------------------------------------------------------
+import           Model.SettleState              ( SettleState(..) )
 
 -- |Settlement describes a necessary transaction to happen to equal out
--- spendings between the parties in a given month.
--- Here, 'creditor' is the party to whom the settlement is owed (the one
--- who spent more during the month).
+-- spending between the parties in a given month. 'creditor' is the party
+-- to whom the settlement is owed (the one who spent more during the month).
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Settlement
   state    SettleState
-  year     Integer
+  year     Int
   month    Int
   creditor Text
 
@@ -52,3 +59,17 @@ Settlement
 
 instance ToJSON Settlement
 instance FromJSON Settlement
+
+instance ToHtml Settlement where
+  toHtml s = with div_ [class_ "row my-3 d-flex justify-content-between"] $ do
+    with div_
+         [class_ "col"]
+         (toHtml $ show (settlementYear s) <> "-" <> show (settlementMonth s))
+    -- with div_ [class_ "col"] (toHtml $ settlementAmount s)
+    with div_ [class_ "col"] $ if settlementState s == OUTSTANDING
+      then with button_ [class_ "btn btn-primary"] "Transferred"
+      else with button_ [class_ "btn btn-success"] "Settled"
+  toHtmlRaw = toHtml
+
+-- settlementAmount :: Settlement -> [Record] -> Text
+-- settlementAmount s db = _impl

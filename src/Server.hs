@@ -7,15 +7,18 @@
 module Server where
 
 import           Control.Monad.Except
+import           Control.Monad.Logger (runStderrLoggingT)
 import           Data.Maybe
+import           Data.String.Conversions (cs)
 import           Data.Text
 import           Data.Time
+import           Database.Persist.Sqlite
 import           Lucid
 import           Network.HTTP.Media   ((//), (/:))
+import           Network.Wai.Handler.Warp as Warp
 import           Servant
-
+-------------------------------------------------------------------------------
 import           Dashboard
-import           Database             (records)
 import           Model.Record
 
 -- Serving HTML with Lucid
@@ -30,26 +33,46 @@ instance ToHtml a => MimeRender HTML a where
 instance MimeRender HTML (Html a) where
   mimeRender _ = renderBS
 
--- Defining the API
+--------- API
 type API = Get '[ HTML] Dashboard 
-      :<|> ReqBody '[ FormUrlEncoded] RecordForm :> Post '[ HTML] Dashboard
+      :<|> ReqBody '[ FormUrlEncoded] RecordForm :> PostCreated '[HTML] Dashboard
 
-server :: Server API
-server = dashboardH :<|> recordH
+--------- Serving Handlers
+server :: ConnectionPool -> Server API
+server pool = dashboardH 
+         :<|> recordTransactionH
   where
-    dashboardH :: Handler Dashboard
-    dashboardH = return dashboard
-    recordH :: RecordForm -> Handler Dashboard
-    recordH record' = do
-      currentDay <- liftIO $ utctDay <$> getCurrentTime
-      return $
-        Dashboard
-          (Record
-             (ruser record')
-             (ramount record')
-             (rcomment record')
-             currentDay :
-           records)
+    recordTransactionH :: RecordForm -> Handler Dashboard
+    recordTransactionH recordForm = do 
+      liftIO $
+        flip runSqlPersistMPool pool $ do
+          currentDay <- liftIO $ utctDay <$> getCurrentTime
+          let newRecord = Record (ruser recordForm) (ramount recordForm) (rcomment recordForm) currentDay
+            in insert newRecord
+      records <- liftIO $ 
+        flip runSqlPersistMPool pool $ do
+          recordVals <- selectList [] []
+          return $ entityVal <$> recordVals
+      return $ Dashboard records
 
-app :: Application
-app = serve (Proxy :: Proxy API) server
+    dashboardH :: Handler Dashboard
+    dashboardH = do
+      records <- liftIO $ 
+        flip runSqlPersistMPool pool $ do
+          recordVals <- selectList [RecordUsername ==. "Martin"] []
+          return $ entityVal <$> recordVals
+      return $ Dashboard records
+
+--------- APP
+app :: ConnectionPool -> Application
+app pool = serve (Proxy :: Proxy API) $ server pool
+
+mkApp :: FilePath -> IO Application
+mkApp sqliteFile = do
+  pool <- runStderrLoggingT $ do
+    createSqlitePool (cs sqliteFile) 5
+  runSqlPool (runMigration migrateAll) pool
+  return $ app pool
+
+run :: FilePath -> IO ()
+run sqliteFile = Warp.run 4000 =<< mkApp sqliteFile
